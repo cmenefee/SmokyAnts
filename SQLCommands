@@ -1,0 +1,62 @@
+postgres=# \l
+postgres=# CREATE DATABASE smokyants;
+postgres=# \c smokyants
+smokyants=# grant all privileges on smokyants to ruser;
+You are now connected to database "smokyants" as user "postgres".
+
+CREATE TABLE smokyants
+(
+site VARCHAR(50),	
+code VARCHAR(50),	
+subplot	VARCHAR(50),
+sample VARCHAR(50),	
+Stigmatomma_pallipes INT,
+Aphaenogaster_rudis INT,
+Aphaenogaster_carolinensis INT,
+Aphaenogaster_fulva INT,
+Brachymyrmex_depilis INT,
+Camponotus_pennsylvanicus INT,
+Camponotus_americanus INT,
+Camponotus_chromaiodes INT,
+Camponotus_subbarbatus INT,
+Camponotus_nearcticus INT,
+Crematogaster_minutissima INT,
+Formica_subsericea INT,
+Lasius_alienus INT,
+Lasius_umbratus INT,
+Monomorium_minimum INT,
+Monomorium_americana INT,
+Myrmica_latifrons INT,
+Myrmica_pinetorum INT,
+Myrmica_punctiventris INT,
+Myrmica_spatulata INT,
+Nylanderia_faisonensis INT,
+Ponera_pennsylvanica INT,
+Prenolepis_imparis INT,
+Proceratium_silaceum INT,
+Strumigenys_clypeata INT,
+Strumigenys_ohioensis INT,
+Pyramica_ornata INT,
+Strumigenys_rostratum INT,
+Solenopsis_molesta INT,
+Stenamma_meridionalis INT,
+Stenamma_brevicorne INT,
+Stenamma_diecki INT,
+Stenamma_impar INT,
+Stenamma_schmitti INT,
+Stenamma_UNKNOWN INT,
+Tapinoma_sessile INT,
+Temnothorax_longispinosus INT,
+Temnothorax_curvispinosus INT,
+site_name VARCHAR(50),	
+utm_n INT,	
+utm_e INT,	
+n FLOAT(50),	
+e FLOAT(50),	
+elevation_m FLOAT(50),
+sample_x FLOAT(50), 	
+sample_y FLOAT(50)
+);
+
+COPY smokyants FROM '/home/daiten/Programming/R/Projects/SmokyAnts/Data/smokies_all.csv' WITH (FORMAT csv, NULL 'NA', HEADER);
+

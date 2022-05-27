@@ -1,0 +1,97 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Let's try plotting ants here. 
+
+```{r}
+# install.packages("RPostgreSQL")
+# install.packages("compare")
+require("RPostgreSQL")
+require("compare")
+
+# Load the PostgreSQL driver, create a connection to the postgres database
+drv <- dbDriver("PostgreSQL")
+con <- dbConnect(drv, dbname = "smokyants", host = "localhost", port = 5432, user = "ruser", password = "ruser")
+sql_string <- paste("SELECT * FROM smokyants", sep="")
+smokyants <- data.frame(dbGetQuery(con, sql_string))
+
+FileDirectory <- paste("/home/daiten/Programming/R/Projects/SmokyAnts/Graphics/", sep="")
+
+tail(smokyants)
+```
+
+If we can plot one speices per elevation bracket...Maybe we can just stack it all after that?
+
+```{r}
+par(mfrow=c(2,2))
+
+nylanderia_faisonensis <- subset(smokyants, smokyants$nylanderia_faisonensis > 0)
+nf <- plot(nylanderia_faisonensis$elevation_m~nylanderia_faisonensis$nylanderia_faisonensis)
+
+brachymyrmex_depilis <- subset(smokyants, smokyants$brachymyrmex_depilis > 0)
+bd <- plot(brachymyrmex_depilis$elevation_m~brachymyrmex_depilis$brachymyrmex_depilis)
+
+stigmatomma_pallipes <- subset(smokyants, smokyants$stigmatomma_pallipes > 0)
+sp <- plot(stigmatomma_pallipes$elevation_m~stigmatomma_pallipes$stigmatomma_pallipes)
+
+camponotus_subbarbatus <- subset(smokyants, smokyants$camponotus_subbarbatus > 0)
+cs <- plot(camponotus_subbarbatus$elevation_m~camponotus_subbarbatus$camponotus_subbarbatus)
+```
+
+Let's try a few of them stacked.....
+```{r}
+ants <- data.frame()
+elevation <- smokyants['elevation_m']
+
+more_ants <- smokyants['brachymyrmex_depilis']
+more_ants[more_ants == 0]  <- NA
+
+extra_ants <- smokyants['nylanderia_faisonensis']
+extra_ants[extra_ants == 0]  <- NA
+
+even_more <- smokyants['lasius_alienus']
+even_more[even_more == 0]  <- NA
+
+and_more <- smokyants['stenamma_meridionalis']
+and_more[and_more == 0]  <- NA
+
+some_more <- smokyants['monomorium_americana']
+some_more[and_more == 0]  <- NA
+
+ants <- append(ants, more_ants)
+ants <- append(ants, extra_ants)
+ants <- append(ants, even_more)
+ants <- append(ants, and_more)
+ants <- append(ants, some_more)
+
+# png(paste(FileDirectory, "fiveants.jpg", sep = ""), width = 1000, height = 1000)
+plot(unlist(elevation)~unlist(ants[1]), ylim = range(smokyants$elevation_m), xlim = range(smokyants[,5:42]))
+points(unlist(elevation)~unlist(ants[2]))
+points(unlist(elevation)~unlist(ants[3]))
+points(unlist(elevation)~unlist(ants[4]))
+points(unlist(elevation)~unlist(ants[5]))
+# dev.off()
+```
+
+And now we make the loop....
+```{r}
+ants <- data.frame()
+elevation <- smokyants['elevation_m']
+
+for(i in colnames(smokyants[5:42]))
+{
+  some_ants <- smokyants[i]
+  some_ants[some_ants == 0]  <- NA
+  ants <- append(ants, some_ants)
+}
+
+png(paste(FileDirectory, "AllAnts.jpg", sep = ""), width = 1000, height = 1000)
+plot(x=NA, ylim = range(smokyants$elevation_m), xlim = range(smokyants[,5:42]))
+for(ii in seq(1,length(ants)))
+{
+  points(unlist(elevation)~unlist(ants[ii]))  
+}
+dev.off()
+```

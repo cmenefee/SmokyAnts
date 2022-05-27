@@ -1,0 +1,101 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+So to loop through it all and put it allcash
+```{r}
+ants <- data.frame()
+elevation <- smokyants['elevation_m']
+
+for(i in colnames(smokyants[5:42]))
+{
+  some_ants <- smokyants[i]
+  some_ants[some_ants == 0] <- NA
+  #some_ants[some_ants == 1] <- 0
+  ants <- append(ants, some_ants)
+}
+
+png(paste(FileDirectory, "AllBubleAnts.jpg", sep = ""), width = 2500, height = 2500)
+plot(x=NA, ylim = range(smokyants$elevation_m), xlim = range(smokyants[,5:42]))
+for(ii in seq(1,length(ants)))
+{
+  symbols(smokyants$elevation_m, unlist(ants[ii]), circles = unlist(ants[ii]), 
+          xlab = NULL, ylab = NULL, xlim=NULL, ylim=NULL, yaxt="n")
+  par(new=TRUE)
+}
+dev.off()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+ants <- data.frame()
+elevation <- smokyants['elevation_m']
+
+for(i in colnames(smokyants[5:42]))
+{
+  some_ants <- smokyants[i]
+  some_ants[some_ants == 0]  <- NA
+  ants <- append(ants, some_ants)
+}
+
+png(paste(FileDirectory, "AllAnts.jpg", sep = ""), width = 1000, height = 1000)
+plot(x=NA, ylim = range(smokyants$elevation_m), xlim = range(smokyants[,5:42]))
+for(ii in seq(1,length(ants)))
+{
+  symbols(unlist(elevation)~unlist(ants[ii]), circles = unlist(ants[ii]))  
+}
+dev.off()
+
+
+more_ants <- smokyants['brachymyrmex_depilis']
+more_ants[more_ants == 0]  <- NA
+
+extra_ants <- smokyants['nylanderia_faisonensis']
+extra_ants[extra_ants == 0]  <- NA
+
+symbols(range(smokyants[,5:42])~range(smokyants$elevation_m), circles = unlist(more_ants))
+```
+
+```{r}
+
+# NOT RUN {
+require(stats); require(grDevices)
+with(trees, {
+## Girth is diameter in inches
+
+op <- palette(rainbow(N, end = 0.9))
+symbols(Height, Volume, circles = Girth/16, inches = FALSE, bg = 1:N, fg = "gray30", main = "symbols(*, circles = Girth/16, bg = 1:N)")
+palette(op)
+})
+# }
+
+```
+
+```{r}
+png(paste(FileDirectory, "AntBubble", sep = ""), width = 1000, height = 1000)
+symbols(unlist(ants[2]), smokyants$elevation_m, circles = unlist(ants[2]))
+dev.off()
+```
+
+
+

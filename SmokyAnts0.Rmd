@@ -1,0 +1,106 @@
+---
+title: "Smoky Ants."
+output: html_notebook
+---
+
+Got another Dataset.
+It's got ants this time: "Great smoky mountain ant community composition"
+https://datadryad.org/stash/dataset/doi:10.5061/dryad.z8w9ghx7g
+https://esajournals.onlinelibrary.wiley.com/doi/10.1002/ecy.3233
+
+Abstract
+
+Disentangling the drivers of diversity gradients can be challenging. The Measurement of Biodiversity (MoB) framework decomposes scale-dependent changes in species diversity into three components of community structure: the species abundance distribution (SAD), the total community abundance, and the within-species spatial aggregation. Here we extend MoB from categorical treatment comparisons to quantify variation along continuous geographic or environmental gradients. Our approach requires sites along a gradient, each consisting of georeferenced plots of abundance-based species composition data. We demonstrate our method using a case study of ants sampled along an elevational gradient of 28 sites in a mixed deciduous forest of the Great Smoky Mountains National Park, USA. MoB analysis revealed that decreases in ant species richness along the elevational gradient were associated with decreasing evenness and total number of species which counteracted the modest increase in richness associated with decreasing spatial aggregation along the gradient. Total community abundance had a negligible effect on richness at all but the finest spatial grains, SAD effects increased in importance with sampling effort, while the aggregation effect had the strongest effect at coarser spatial grains. These results do not support the more-individuals hypothesis, but they are consistent with a hypothesis of stronger environmental filtering at coarser spatial grains. Our extension of MoB has the potential to elucidate how components of community structure contribute to changes in diversity along environmental gradients and should be useful for a variety of assemblage-level data collected along gradients.
+Methods
+
+38 species of ants
+
+So let's connect to the database.
+```{r}
+# install.packages("RPostgreSQL")
+# install.packages("compare")
+require("RPostgreSQL")
+require("compare")
+
+# Load the PostgreSQL driver, create a connection to the postgres database
+drv <- dbDriver("PostgreSQL")
+con <- dbConnect(drv, dbname = "smokyants", host = "localhost", port = 5432, user = "ruser", password = "ruser")
+sql_string <- paste("SELECT * FROM smokyants", sep="")
+smokyants <- data.frame(dbGetQuery(con, sql_string))
+
+tail(smokyants)
+```
+Sites ranged in elevation from 379-1828 m and were in relatively undisturbed deciduous forest sites, away from trails. At each site, we randomly placed a 50 × 50 m plot, from which 16 1-m2 quadrats were arranged in a nested design: 10 x 10 m subplots were placed in the corners of each 50 x 50 m plot, and 1-m2 quadrats were placed in the corners of each 10 x 10 m subplot, for a total of 16 1-m2 quadrats per site. Ants were sampled by collecting all of the leaflitter within each quadrat and sifting through it with a coarse mesh screen (1-cm grid) to remove the largest fragments and concentrate the fine litter. Concentrated litter from each quadrat was then put in its own mini-Winkler sacks for 2 days in the lab. After 2 days, all worker ants were extracted and enumerated. 
+
+So they're looking at 'richness' * 'elevation'.
+
+"....Species richness is the number of different species represented in an ecological community, landscape or region. Species richness is simply a count of species, and it does not take into account the abundances of the species or their relative abundance distributions. Species richness is sometimes considered synonymous with species diversity, but the formal metric species diversity takes into account both species richness and species evenness...."
+
+Let's look at some preliminaries
+```{r}
+colnames(smokyants)
+
+print(paste("###############################Site Names and elevation###############################"))
+unique(smokyants$site_name)
+unique(smokyants$elevation_m)
+
+print(paste("###############################Number of unique sites and number of elevations###############################"))
+length(unique(smokyants$site_name))
+length(unique(smokyants$elevation_m))
+range(smokyants$elevation_m)
+```
+
+Being as how this is richness perhaps it'd be best to go: how many found per elevation.... bracket?
+```{r}
+library("mapview")
+mapview(smokyants, xcol="e", ycol="n", grid = FALSE, crs = 4269)
+```
+
+let's look at a few of the sites
+```{r}
+Twenty_Mile <- subset(smokyants, smokyants$site_name == "Twenty Mile")
+Abrams_Creek <- subset(smokyants, smokyants$site_name == "Abrams Creek")
+Laurel_Falls <- subset(smokyants, smokyants$site_name == "Laurel Falls")
+```
+
+That's al fine and dandy but I feel like two of these share elevation...
+[1] "941 at  Goshen prong"
+[1] "941 at  Ramsay Cascade"
+```{r}
+library(tidyverse)
+
+for(i in unique(smokyants$site_name))
+{
+  sitename <- subset(smokyants, smokyants$site_name == i)
+  print(paste(unique(sitename$elevation_m), "at ", i))
+}
+```
+
+Let's try and graph at least one location...?
+```{r}
+Abrams_Creek <- subset(smokyants, smokyants$site_name == "Abrams_Creek")
+Twenty_Mile <- subset(smokyants, smokyants$site_name == "Twenty Mile")
+Laurel_Falls <- subset(smokyants, smokyants$site_name == "Laurel Falls")
+Tremont_River <- subset(smokyants, smokyants$site_name == "Tremont River")
+Katani_Trail <- subset(smokyants, smokyants$site_name == "Katani Trail")
+
+Katani_Trail
+```
+
+So let's try them all
+```{r}
+elevations <- c()
+
+for(i in unique(smokyants$site_name))
+  {
+    sitename <- subset(smokyants, smokyants$site_name == i)
+    elevations <- append(elevations, unique(sitename$elevation_m))
+  }
+
+par(mar=c(8, 4, 2, 2) + 0.1)
+plot(elevations, xaxt="n", xlab = "", ylab = "Elevation", main="Elevations for each of the sites")
+axis(1, at=1:29, unique(smokyants$site_name), las=2)
+```
+
+Next maybe look at  cluster analysis?
+Or any other type of plot to show amount found vs. elevation
